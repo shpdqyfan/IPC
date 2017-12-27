@@ -4,7 +4,7 @@
 IPC                                                                                                                          
 |—— Component                                                                                                                 
 |—— |—— CMakeLists.txt                 #Compile Component target                                                             
-|—— |—— include                        #Expose the interface files of Component
+|—— |—— include                        #Expose the interface files of Component                                              
 |—— |—— Buffer                                                                 
 |—— |——|—— CMakeLists.txt              #Compile Buffer target within Component
 |—— |—— Thread 
