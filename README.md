@@ -1,9 +1,9 @@
 # IPC
 
-1.Folder structure of my IPC project
-IPC
-|—— Component
-|—— |—— CMakeLists.txt                 #Compile Component target
+1.Folder structure of my IPC project                                                                                         
+IPC                                                                                                                          
+|—— Component                                                                                                                 
+|—— |—— CMakeLists.txt                 #Compile Component target                                                             
 |—— |—— include                        #Expose the interface files of Component
 |—— |—— Buffer                                                                 
 |—— |——|—— CMakeLists.txt              #Compile Buffer target within Component
@@ -16,4 +16,3 @@ IPC
 |—— DataCenterProc
 |—— |—— CMakeLists.txt                 #Compile DataCenterProc target                                     
              
-2.
