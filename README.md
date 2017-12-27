@@ -12,7 +12,7 @@ IPC
 |—— |—— IpcMsg                                                                                                               
 |—— |——|—— CMakeLists.txt -----------Compile IpcMsg target within Component                                                 
 |—— ControlProc                                                                                                              
-|—— |—— CMakeLists.txt -------------Compile ControlProc target                                                             
+|—— |—— CMakeLists.txt -----------------Compile ControlProc target                                                           
 |—— DataCenterProc                                                                                                           
-|—— |—— CMakeLists.txt -------------Compile DataCenterProc target                                                          
+|—— |—— CMakeLists.txt -----------------Compile DataCenterProc target                                                          
              
