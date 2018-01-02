@@ -1,10 +1,10 @@
 # IPC
 
 1.Folder structure of my IPC project                                                                                         
-IPC       
+IPC                                                                                                                                       
 |—— build                                                                                                                                 
 |—— |—— CMakeLists.txt -----------------Compile IPC project                                                                               
-|—— |—— bin ----------------------------Output directory of whole project                                                                 
+|—— |—— bin -----------------------------Output directory of whole project                                                                
 |—— Component                                                                                                                             
 |—— |—— CMakeLists.txt -----------------Compile Component target                                                             
 |—— |—— include -------------------------Expose the interface files of Component                                             
