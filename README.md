@@ -4,7 +4,7 @@
 IPC                                                                                                                                       
 |—— build                                                                                                                                 
 |—— |—— CMakeLists.txt -----------------Compile IPC project                                                                               
-|—— |—— bin -----------------------------Output directory of whole project                                                                
+|—— |—— bin -----------------------------Output directory of whole project targets                                                        
 |—— Component                                                                                                                             
 |—— |—— CMakeLists.txt -----------------Compile Component target                                                             
 |—— |—— include -------------------------Expose the interface files of Component                                             
