@@ -1,7 +1,7 @@
 # IPC
 
-Folder structure of my IPC project：                                                                                         
-IPC                                                                                                                                       
+Folder structure of my IPC project：                                                                                         
+IPC                                                                                                                                      
 |—— build                                                                                                                                 
 |—— |—— CMakeLists.txt -----------------Compile IPC project                                                                               
 |—— |—— bin -----------------------------Output directory of whole project targets                                                        
