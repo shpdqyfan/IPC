@@ -1,6 +1,6 @@
 # IPC
 
-1.Folder structure of my IPC project                                                                                         
+Folder structure of my IPC project：                                                                                         
 IPC                                                                                                                                       
 |—— build                                                                                                                                 
 |—— |—— CMakeLists.txt -----------------Compile IPC project                                                                               
