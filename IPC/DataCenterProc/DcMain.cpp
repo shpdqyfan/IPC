@@ -7,7 +7,6 @@
 
 #include <iostream>
 
-#include "Thread/Thread.h"
 #include "Buffer/Buffer.h"
 #include "IpcMsg/IpcMsg.h"
 
@@ -15,11 +14,9 @@ int main()
 {
     std::cout<<"Dc process start"<<std::endl;
 
-    //start Buffer to polling request from ControlProcess
-    //get request from Buffer
-    //process request
-    //call IpcMsg send response to ControlProcess
-    //clear request
+    //create IPC msg sending thread
+
+    //create IPC msg receiving thread
     
     return 0;
 }
