@@ -10,6 +10,8 @@
 #include "Buffer/Buffer.h"
 #include "IpcMsg/IpcMsg.h"
 
+using namespace Com::IpcMsg;
+
 int main()
 {
     std::cout<<"Dc process start"<<std::endl;
