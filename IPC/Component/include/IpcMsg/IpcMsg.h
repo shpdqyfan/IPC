@@ -20,44 +20,30 @@ enum IpcMsgGlobalId
 
 enum IpcMsgType
 {
-    IPC_MSG_TYPE_BIN = 0,
+    IPC_MSG_TYPE_BIN_START = 0,
     IPC_MSG_TYPE_DATA
 };
 
 struct IpcMsgObj
 {
-public:
-    IpcMsgObj(IpcMsgGlobalId sId, IpcMsgGlobalId rId, IpcMsgType t, int id)
-        : sendId(sId)
-        , recvId(rId)
-        , type(t)
-        , requestId(id)
-    {}
-
-    void setData(int d)
-    {
-        data = d;
-    }
-
     void dump()
     {
         std::cout<<"dump, IpcMsgObj: sendId="<<sendId
             <<", recvId="<<recvId
             <<", msg type="<<type
-            <<", requestId"<<requestId
-            <<", data"<<data<<std::endl;
+            <<", requestId"<<requestId<<std::endl;
     }
     
     IpcMsgGlobalId sendId;
     IpcMsgGlobalId recvId;
     IpcMsgType type;
     int requestId;
-    int data;
+    char data[256];
 };
 
-int createUdsIpc();
-void sendUdsMsg();
-void recvUdsMsg();
+int createUdsIpc(const char* sockFile);
+int sendUdsMsg(int sfd, const char* sockFile, void* buf, int size);
+int recvUdsMsg(int sfd, void* buf, int size);
 
 }
 }

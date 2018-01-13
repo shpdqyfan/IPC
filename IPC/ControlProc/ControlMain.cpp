@@ -7,15 +7,21 @@
 */
 
 #include <iostream>
+#include <thread>
 #include <array>
+#include <string>
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "Buffer/Buffer.h"
 #include "IpcMsg/IpcMsg.h"
 
+using namespace Com;
 using namespace Com::IpcMsg;
+
+void processIpcMsgObjCbInMainProc(IpcMsgObj obj);
 
 ///////////////////////////////////////////////////////////////////////
 typedef enum
@@ -26,7 +32,6 @@ typedef enum
     START_UNKNOWN
 }PROCESS_STATE;
 
-///////////////////////////////////////////////////////////////////////
 class Process
 {
 public:
@@ -53,10 +58,13 @@ public:
 
 unsigned nextProcIndex = 0;
 static const unsigned TOTAL_PROC_NUM = 2;
+static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr";
 std::array<Process, TOTAL_PROC_NUM> myProcArray;
+int udsIpcSfd = -1;
+Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObjCbInMainProc);
 
 ///////////////////////////////////////////////////////////////////////
-void genProcList()
+void getProcList()
 {
     Process controlProc("ControlProc.bin", "ControlProc");
     controlProc.procState = START_SUCCESS;
@@ -112,12 +120,18 @@ int startUp()
     return 0;
 } 
 
-void processIpcMsgObj(IpcMsgObj obj)
+void waitForProcExit()
 {
-    std::cout<<"processIpcMsgObj"<<std::endl;
+
+}
+
+///////////////////////////////////////////////////////////////////////
+void processIpcMsgObjCbInMainProc(IpcMsgObj obj)
+{
+    std::cout<<"processIpcMsgObjCbInMainProc"<<std::endl;
     obj.dump();
 
-    if(IPC_MSG_TYPE_BIN == obj.type)
+    if(IPC_MSG_TYPE_BIN_START == obj.type)
     {
         myProcArray[nextProcIndex].procState = START_SUCCESS;
         nextProcIndex += 1;
@@ -128,7 +142,7 @@ void processIpcMsgObj(IpcMsgObj obj)
         }
         else
         {
-            std::cout<<"processIpcMsgObj, IPC project start complete"<<std::endl;
+            std::cout<<"processIpcMsgObjCbInMainProc, IPC project start complete"<<std::endl;
         }
     }
     else if(IPC_MSG_TYPE_DATA == obj.type)
@@ -137,21 +151,88 @@ void processIpcMsgObj(IpcMsgObj obj)
     }
 }
 
+void recvUdsMsgCbInMainProc(int sfd)
+{
+    while(1)
+    {
+        struct IpcMsgObj ipcObj;
+        memset(&ipcObj, 0, sizeof(ipcObj));
+    
+        if(0 > IpcMsg::recvUdsMsg(sfd, (void*)(&ipcObj), sizeof(ipcObj)))
+        {
+            std::cout<<"recvUdsMsgCbInMainProc, receive error"<<std::endl;
+        }
+        else
+        {
+            std::cout<<"recvUdsMsgCbInMainProc, receive"
+                <<", send id="<<ipcObj.sendId
+                <<", recv id="<<ipcObj.recvId
+                <<", msg type="<<ipcObj.type<<std::endl;
+        }
+
+        myIpcMsgBuffer.pushToBuffer(ipcObj);
+    }
+}
+
+void workingCbInMainProc(int sfd)
+{
+    for(unsigned i = 1;i <= 10;i++)
+    {
+        struct IpcMsgObj ipcObj;
+        memset(&ipcObj, 0, sizeof(ipcObj));
+
+        ipcObj.sendId = IPC_MSG_ID_MAIN;
+        ipcObj.recvId = IPC_MSG_ID_DC;
+        ipcObj.type = IPC_MSG_TYPE_DATA;
+        ipcObj.requestId = i;
+
+        std::string dataStr = "Data from MainProcess: " + std::to_string(i);
+        memcpy(ipcObj.data, dataStr.c_str(), sizeof(dataStr));
+
+        IpcMsg::sendUdsMsg(sfd, udsPath, (void*)(&ipcObj), sizeof(ipcObj));
+
+        sleep(3);
+    }    
+}
+
 ///////////////////////////////////////////////////////////////////////
-Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObj);
 int main()
 {
     std::cout<<"Main process start"<<std::endl;
 
-    //create IPC msg sending thread
+    //delete socket file
+    unlink(udsPath);
 
-    //create IPC msg receiving thread
+    //create UNIX domain IPC 
+    udsIpcSfd = IpcMsg::createUdsIpc(udsPath);
+    if(0 > udsIpcSfd)
+    {
+        return 1;
+    }
+
+    //start IPC msg receiving thread
+    std::thread udsIpcRecvThread(recvUdsMsgCbInMainProc, udsIpcSfd);
+
+    //start Buffering which is used to buffer the msg from other process
+    myIpcMsgBuffer.startBuffering();
+
+    //ensure that receiving thread and Buffering thread have finished starting
+    sleep(2);
 
     //get process list of whole IPC project
-    genProcList();
+    getProcList();
 
     //startup all process of IPC project
     startUp();
+
+    //start a working thread which will send somthing to other process
+    std::thread workingThread(workingCbInMainProc, udsIpcSfd);
+
+    //wait for current process exit
+    waitForProcExit();
+
+    //join all threads
+    udsIpcRecvThread.join();
     
     return 0;
 }

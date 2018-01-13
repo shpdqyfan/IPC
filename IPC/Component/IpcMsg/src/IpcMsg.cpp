@@ -10,21 +10,23 @@
 #include "Socket.h"
 #include "IpcMsg/IpcMsg.h"
 
+using namespace Com;
 using namespace Com::IpcMsg;
 
-int createUdsIpc(char* sockFile)
+int IpcMsg::createUdsIpc(const char* sockFile)
 {
     //create un socket
     int sfd = Socket::createSocket(AF_UNIX, SOCK_DGRAM);
     if(0 > sfd)
     {
         std::cout<<"createUdsIpc, create socket error"<<std::endl;
+        return -1;
     }
 
     //set non-block flag
     if(0 > Socket::setNonBlockSocket(sfd))
     {
-        std::cout<<"createUdsIpc, set non block error"<<std::endl;
+        std::cout<<"createUdsIpc, set non block flag error"<<std::endl;
         Socket::closeFd(sfd);
         return -1;
     }
@@ -40,17 +42,29 @@ int createUdsIpc(char* sockFile)
         return -1;
     }
     
+    return sfd;
+}
+
+int IpcMsg::sendUdsMsg(int sfd, const char* sockFile, void* buf, int size)
+{
+    if(-1 == Socket::sendMessage(sfd, sockFile, buf, size))
+    {
+        std::cout<<"sendUdsMsg, error"<<std::endl;
+        return -1;
+    }
+
     return 0;
 }
 
-void sendUdsMsg()
+int IpcMsg::recvUdsMsg(int sfd, void* buf, int size)
 {
-
-}
-
-void recvUdsMsg()
-{
-
+    if(-1 == Socket::recvMessage(sfd, buf, size))
+    {
+        std::cout<<"recvUdsMsg, error"<<std::endl;
+        return -1;
+    }
+    
+    return 0;
 }
 
 

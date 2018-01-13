@@ -24,7 +24,7 @@ namespace Socket {
     void closeFd(int sfd);
     ssize_t recvMessage(int sfd, void* buf, int size);
     //used in unix domain socket
-    ssize_t sendMessage(int sfd, char* sockFile, void* buf, int size);
+    ssize_t sendMessage(int sfd, const char* sockFile, void* buf, int size);
     
 }
 }

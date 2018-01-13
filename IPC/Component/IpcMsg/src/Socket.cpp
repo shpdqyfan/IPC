@@ -112,17 +112,22 @@ ssize_t Socket::recvMessage(int sfd, void* buf, int size)
     mhdr.msg_controllen = 0;
     mhdr.msg_flags = 0;
     
-    int rlt = recvmsg(sfd, &(mhdr), 0);
-    if(0 > rlt)
+    int len = recvmsg(sfd, &(mhdr), 0);
+    if(0 > len)
     {
         std::cout<<"recvMessage, sfd="<<sfd<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
+        return -1;
+    }
+    else if(len != size)
+    {
+        std::cout<<"recvMessage, len != size, sfd="<<sfd<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
         return -1;
     }
 
     return 0;
 }
 
-ssize_t Socket::sendMessage(int sfd, char* sockFile, void* buf, int size)
+ssize_t Socket::sendMessage(int sfd, const char* sockFile, void* buf, int size)
 {
     struct sockaddr_un sUnAddr;
     struct iovec ioBuf[1];
