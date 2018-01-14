@@ -58,7 +58,7 @@ public:
 
 unsigned nextProcIndex = 0;
 static const unsigned TOTAL_PROC_NUM = 2;
-static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr";
+static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr/ipc_sock";
 std::array<Process, TOTAL_PROC_NUM> myProcArray;
 int udsIpcSfd = -1;
 Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObjCbInMainProc);
@@ -122,7 +122,7 @@ int startUp()
 
 void waitForProcExit()
 {
-
+    while(1){}
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -233,6 +233,7 @@ int main()
 
     //join all threads
     udsIpcRecvThread.join();
+    workingThread.join();
     
     return 0;
 }

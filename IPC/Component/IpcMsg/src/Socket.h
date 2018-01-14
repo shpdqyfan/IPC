@@ -17,7 +17,7 @@ namespace Socket {
 
     int createSocket(sa_family_t family, int stype);
     int setNonBlockSocket(int sfd);
-    int bindSocketTo(int sfd, const struct sockaddr* saddr);
+    int bindSocketTo(int sfd, const struct sockaddr* saddr, int len);
     int listenSocket(int sfd);
     int acceptFromPeer(int sfd, struct sockaddr* saddr);
     int connectToPeer(int sfd, const struct sockaddr* saddr);

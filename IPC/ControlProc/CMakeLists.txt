@@ -17,7 +17,7 @@ set(APP_NAME ControlProc.bin)
 set(APP_SRC ControlMain.cpp)
 add_executable(${APP_NAME} ${APP_SRC})
 
-target_link_libraries(${APP_NAME} component)
+target_link_libraries(${APP_NAME} component pthread)
 
 include_directories("../Component/include")
 

@@ -42,11 +42,11 @@ int Socket::setNonBlockSocket(int sfd)
     return 0;
 }
 
-int Socket::bindSocketTo(int sfd, const struct sockaddr* saddr)
+int Socket::bindSocketTo(int sfd, const struct sockaddr* saddr, int len)
 {
-    if(0 > bind(sfd, saddr, sizeof saddr))
+    if(0 > bind(sfd, saddr, len))
     {
-        std::cout<<"bindSocketTo, error, sfd="<<sfd<<std::endl;
+        std::cout<<"bindSocketTo, error, sfd="<<sfd<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
         return -1;
     }
 
@@ -91,7 +91,7 @@ int Socket::connectToPeer(int sfd, const struct sockaddr* saddr)
 
 void Socket::closeFd(int sfd)
 {
-    std::cout<<"closeFd, sfd"<<sfd<<std::endl;
+    std::cout<<"closeFd, sfd="<<sfd<<std::endl;
     
     close(sfd);
 }

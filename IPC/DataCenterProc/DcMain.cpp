@@ -19,7 +19,7 @@ using namespace Com::IpcMsg;
 void processIpcMsgObjCbInDcProc(IpcMsgObj obj);
 
 int udsIpcSfd = -1;
-static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr";
+static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr/ipc_sock";
 Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObjCbInDcProc);
 
 void waitForProcExit()
@@ -110,6 +110,7 @@ int main()
 
     //join all threads
     udsIpcRecvThread.join();
+    workingThread.join();
     
     return 0;
 }

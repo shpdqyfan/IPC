@@ -35,7 +35,9 @@ int IpcMsg::createUdsIpc(const char* sockFile)
     struct sockaddr_un saddr;
     saddr.sun_family = AF_UNIX;
     strcpy(saddr.sun_path, sockFile);
-    if(0 > Socket::bindSocketTo(sfd, (struct sockaddr*)&saddr))
+    std::cout<<"createUdsIpc, uds file="<<saddr.sun_path<<std::endl;
+    
+    if(0 > Socket::bindSocketTo(sfd, (struct sockaddr*)&saddr, sizeof(saddr)))
     {
         std::cout<<"createUdsIpc, bind error"<<std::endl;
         Socket::closeFd(sfd);

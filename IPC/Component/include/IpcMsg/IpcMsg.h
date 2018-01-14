@@ -31,7 +31,7 @@ struct IpcMsgObj
         std::cout<<"dump, IpcMsgObj: sendId="<<sendId
             <<", recvId="<<recvId
             <<", msg type="<<type
-            <<", requestId"<<requestId<<std::endl;
+            <<", requestId="<<requestId<<std::endl;
     }
     
     IpcMsgGlobalId sendId;
