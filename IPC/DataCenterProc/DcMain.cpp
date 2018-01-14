@@ -43,28 +43,28 @@ void waitForProcExit()
 
 void processIpcMsgObjCbInDcProc(IpcMsgObj obj)
 {
-    std::cout<<"processIpcMsgObjCbInDcProc"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInDcProc"<<std::endl;
     obj.dump();
 
     if(IPC_MSG_ID_DC != obj.recvId)
     {
-        std::cout<<"processIpcMsgObjCbInDcProc, recvId error"<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInDcProc, recvId error"<<std::endl;
         return;
     }
 
     //step.18 
-    if(IPC_MSG_TYPE_DATA == obj.type)
+    if(IPC_MSG_TYPE_BIN_ALL_SUCC == obj.type)
     {
-        std::cout<<"processIpcMsgObjCbInDcProc, all bins start finished"<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInDcProc, all bins start finished"<<std::endl;
         startFinished = true;
     }
     else if(IPC_MSG_TYPE_DATA == obj.type)
     {
-        std::cout<<"recvUdsMsgCbInDcProc, received:"<<std::endl;
-        std::cout<<"                      send id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.sendId)<<std::endl;
-        std::cout<<"                      recv id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.recvId)<<std::endl;
-        std::cout<<"                      msgtype: "<<IpcMsg::ipcMsgTypeToStr(obj.type)<<std::endl;
-        std::cout<<"                      content: "<<obj.data<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"recvUdsMsgCbInDcProc, received:"<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"                      send id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.sendId)<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"                      recv id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.recvId)<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"                      msgtype: "<<IpcMsg::ipcMsgTypeToStr(obj.type)<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"                      content: "<<obj.data<<std::endl;
     }
 }
 
@@ -77,7 +77,7 @@ void recvUdsMsgCbInDcProc(int sfd)
     
         if(0 > IpcMsg::recvUdsMsg(sfd, (void*)(&ipcObj), sizeof(ipcObj)))
         {
-            std::cout<<"recvUdsMsgCbInDcProc, receive error"<<std::endl;
+            std::cout<<"PID="<<getpid()<<", "<<"recvUdsMsgCbInDcProc, receive error"<<std::endl;
         }
 
         myIpcMsgBuffer.pushToBuffer(ipcObj);
@@ -86,13 +86,13 @@ void recvUdsMsgCbInDcProc(int sfd)
 
 void workingCbInDcProc(int sfd)
 {
-    for(unsigned i = 1;i <= 10;i++)
+    for(unsigned i = 1;i <= 2;i++)
     {
         struct IpcMsgObj ipcObj;
         memset(&ipcObj, 0, sizeof(ipcObj));
 
-        ipcObj.sendId = IPC_MSG_ID_MAIN;
-        ipcObj.recvId = IPC_MSG_ID_DC;
+        ipcObj.sendId = IPC_MSG_ID_DC;
+        ipcObj.recvId = IPC_MSG_ID_MAIN;
         ipcObj.type = IPC_MSG_TYPE_DATA;
         ipcObj.requestId = i;
 
@@ -101,13 +101,13 @@ void workingCbInDcProc(int sfd)
 
         IpcMsg::sendUdsMsg(sfd, udsPath, (void*)(&ipcObj), sizeof(ipcObj));
 
-        sleep(3);
+        sleep(2);
     }    
 }
 
 int main()
 {
-    std::cout<<"Dc process start, triggered by main process"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"Dc process start, triggered by main process"<<std::endl;
 
     //step.9 delete socket file
     unlink(udsPath);
@@ -126,7 +126,7 @@ int main()
     myIpcMsgBuffer.startBuffering();
 
     //step.13 ensure that receiving thread and Buffering thread have finished starting
-    sleep(2);
+    sleep(1);
 
     //step.14 send complete msg to main process 
     struct IpcMsgObj ipcObj;
@@ -140,7 +140,7 @@ int main()
     IpcMsg::sendUdsMsg(udsIpcSfd, udsPath, (void*)(&ipcObj), sizeof(ipcObj));
 
     //step.15 wait for all bins have finished starting
-    waitForAllbinsStart();
+    //waitForAllbinsStart();
 
     //step.20 start a working thread which will send somthing to other process
     std::thread workingThread(workingCbInDcProc, udsIpcSfd);
