@@ -24,12 +24,12 @@ int IpcMsg::createUdsIpc(const char* sockFile)
     }
 
     //set non-block flag
-    if(0 > Socket::setNonBlockSocket(sfd))
-    {
-        std::cout<<"createUdsIpc, set non block flag error"<<std::endl;
-        Socket::closeFd(sfd);
-        return -1;
-    }
+    //if(0 > Socket::setNonBlockSocket(sfd))
+    //{
+    //    std::cout<<"createUdsIpc, set non block flag error"<<std::endl;
+    //    Socket::closeFd(sfd);
+    //    return -1;
+    //}
 
     //bind sfd to addr
     struct sockaddr_un saddr;
@@ -67,6 +67,34 @@ int IpcMsg::recvUdsMsg(int sfd, void* buf, int size)
     }
     
     return 0;
+}
+
+std::string IpcMsg::ipcMsgGlobalIdToStr(IpcMsgGlobalId id)
+{
+    switch(id)
+    {
+        case IPC_MSG_ID_MAIN:
+            return "IPC_MSG_ID_MAIN";
+        case IPC_MSG_ID_DC:
+            return "IPC_MSG_ID_DC";
+        default:
+            return "IPC_MSG_ID_UNKNOW";
+    }
+}
+
+std::string IpcMsg::ipcMsgTypeToStr(IpcMsgType type)
+{
+    switch(type)
+    {
+        case IPC_MSG_TYPE_BIN_START_SUCC:
+            return "IPC_MSG_TYPE_BIN_START_SUCC";
+        case IPC_MSG_TYPE_BIN_ALL_SUCC:
+            return "IPC_MSG_TYPE_BIN_ALL_SUCC";
+        case IPC_MSG_TYPE_DATA:
+            return "IPC_MSG_TYPE_DATA";
+        default:
+            return "IPC_MSG_TYPE_UNKNOW";
+    }
 }
 
 

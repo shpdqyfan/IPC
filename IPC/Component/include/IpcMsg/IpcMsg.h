@@ -8,6 +8,7 @@
 #define IPCMSG_H
 
 #include <iostream>
+#include <string>
 
 namespace Com {
 namespace IpcMsg {
@@ -15,13 +16,18 @@ namespace IpcMsg {
 enum IpcMsgGlobalId
 {
     IPC_MSG_ID_MAIN = 0, //ControlProcess
-    IPC_MSG_ID_DC //DcProcess
+    IPC_MSG_ID_DC, //DcProcess
+
+    IPC_MSG_ID_UNKNOW
 };
 
 enum IpcMsgType
 {
-    IPC_MSG_TYPE_BIN_START = 0,
-    IPC_MSG_TYPE_DATA
+    IPC_MSG_TYPE_BIN_START_SUCC = 0,
+    IPC_MSG_TYPE_BIN_ALL_SUCC,
+    IPC_MSG_TYPE_DATA,
+
+    IPC_MSG_TYPE_UNKNOW
 };
 
 struct IpcMsgObj
@@ -44,6 +50,8 @@ struct IpcMsgObj
 int createUdsIpc(const char* sockFile);
 int sendUdsMsg(int sfd, const char* sockFile, void* buf, int size);
 int recvUdsMsg(int sfd, void* buf, int size);
+std::string ipcMsgGlobalIdToStr(IpcMsgGlobalId id);
+std::string ipcMsgTypeToStr(IpcMsgType type);
 
 }
 }
