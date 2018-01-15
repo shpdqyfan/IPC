@@ -6,6 +6,7 @@
 
 #include <sys/un.h>
 #include <string.h>
+#include <stddef.h>
 
 #include "Socket.h"
 #include "IpcMsg/IpcMsg.h"
@@ -36,8 +37,9 @@ int IpcMsg::createUdsIpc(const char* sockFile)
     saddr.sun_family = AF_UNIX;
     strcpy(saddr.sun_path, sockFile);
     std::cout<<"createUdsIpc, uds file="<<saddr.sun_path<<std::endl;
-    
-    if(0 > Socket::bindSocketTo(sfd, (struct sockaddr*)&saddr, sizeof(saddr)))
+
+    int len = offsetof(struct sockaddr_un, sun_path) + sizeof(saddr.sun_path);
+    if(0 > Socket::bindSocketTo(sfd, (struct sockaddr*)&saddr, len))
     {
         std::cout<<"createUdsIpc, bind error"<<std::endl;
         Socket::closeFd(sfd);

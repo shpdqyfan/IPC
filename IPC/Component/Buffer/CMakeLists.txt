@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(buffer)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
 message(------------------------------------------------)
 find_package(Boost

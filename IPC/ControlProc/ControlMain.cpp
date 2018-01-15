@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #include "Buffer/Buffer.h"
 #include "IpcMsg/IpcMsg.h"
@@ -21,7 +22,7 @@
 using namespace Com;
 using namespace Com::IpcMsg;
 
-void processIpcMsgObjCbInMainProc(IpcMsgObj obj);
+static void processIpcMsgObjCbInMainProc(IpcMsgObj obj);
 
 ///////////////////////////////////////////////////////////////////////
 typedef enum
@@ -58,16 +59,18 @@ public:
     PROCESS_STATE procState;
 };
 
-bool startFinished = false;
-unsigned nextProcIndex = 0;
-int udsIpcSfd = -1;
+static unsigned nextProcIndex = 0;
+static int udsIpcSfd = -1;
 static const unsigned TOTAL_PROC_NUM = 2;
-static const char udsPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr/ipc_sock";
-std::array<Process, TOTAL_PROC_NUM> myProcArray;
-Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObjCbInMainProc);
+static const char udsDcPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr/ipc_sock_dc.socket";
+static const char udsMainPath[] = "/home/yqian1/testing/Unix_Domain_Socket_Addr/ipc_sock_main.socket";
+static sem_t semAllBinsStarted;
+static sem_t semProcExit;
+static std::array<Process, TOTAL_PROC_NUM> myProcArray;
+static Buffer<IpcMsgObj> myIpcMsgBuffer(processIpcMsgObjCbInMainProc);
 
 ///////////////////////////////////////////////////////////////////////
-void getProcList()
+static void getProcList()
 {
     Process controlProc("ControlProc.bin", "ControlProc");
     controlProc.procState = START_SUCCESS;
@@ -80,7 +83,7 @@ void getProcList()
     myProcArray[1] = dcProc;
 }
 
-int spawnProc(Process& proc)
+static int spawnProc(Process& proc)
 {    
     std::cout<<"PID="<<getpid()<<", "<<"spawnProc"<<std::endl;
     proc.dump();
@@ -96,7 +99,7 @@ int spawnProc(Process& proc)
     return 0;
 }
 
-int startUp()
+static int startUp()
 {
     std::cout<<"PID="<<getpid()<<", "<<"startUp, start checking all bin files..."<<std::endl;
 
@@ -125,29 +128,38 @@ int startUp()
     return 0;
 } 
 
-//use semaphore to replace
-void waitForAllbinsStart()
+static void waitForAllbinsStart()
 {
-    while(1 && !startFinished)
+    if(0 != sem_wait(&semAllBinsStarted))
     {
-        sleep(1);
+        std::cout<<"PID="<<getpid()<<", "<<"waitForAllbinsStart, sem_wait error, errno="
+            <<errno<<", "<<strerror(errno)<<std::endl;
     }
 }
 
-//use semaphore to replace
-void waitForProcExit()
+static void waitForProcExit()
 {
-    while(1)
+    if(0 != sem_wait(&semProcExit))
     {
-        sleep(1);
+        std::cout<<"PID="<<getpid()<<", "<<"waitForProcExit, sem_wait error, errno="
+            <<errno<<", "<<strerror(errno)<<std::endl;
+    }
+}
+
+static void handleTermSig()
+{
+    if(0 != sem_post(&semProcExit))
+    {
+        std::cout<<"PID="<<getpid()<<", "<<"handleTermSig, semProcExit posted error, errno="
+            <<errno<<", "<<strerror(errno)<<std::endl;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////
 void processIpcMsgObjCbInMainProc(IpcMsgObj obj)
 {
-    std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInMainProc"<<std::endl;
-    obj.dump();
+    //std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInMainProc"<<std::endl;
+    //obj.dump();
 
     if(IPC_MSG_ID_MAIN != obj.recvId)
     {
@@ -169,8 +181,12 @@ void processIpcMsgObjCbInMainProc(IpcMsgObj obj)
         //step.17 notify all bins that IPC start success
         else
         {
-            std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInMainProc, IPC project start complete"<<std::endl;
-            
+            std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInMainProc, received:"<<std::endl;
+            std::cout<<"PID="<<getpid()<<", "<<"                      send id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.sendId)<<std::endl;
+            std::cout<<"PID="<<getpid()<<", "<<"                      recv id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.recvId)<<std::endl;
+            std::cout<<"PID="<<getpid()<<", "<<"                      msgtype: "<<IpcMsg::ipcMsgTypeToStr(obj.type)<<std::endl;
+            std::cout<<"PID="<<getpid()<<", "<<"                      content: "<<obj.data<<std::endl;
+
             struct IpcMsgObj ipcObj;
             memset(&ipcObj, 0, sizeof(ipcObj));
             ipcObj.sendId = IPC_MSG_ID_MAIN;
@@ -179,9 +195,13 @@ void processIpcMsgObjCbInMainProc(IpcMsgObj obj)
             ipcObj.requestId = 0;
             std::string dataStr = "ALL processes startup";
             memcpy(ipcObj.data, dataStr.c_str(), sizeof(dataStr));
-            IpcMsg::sendUdsMsg(udsIpcSfd, udsPath, (void*)(&ipcObj), sizeof(ipcObj));
+            IpcMsg::sendUdsMsg(udsIpcSfd, udsDcPath, (void*)(&ipcObj), sizeof(ipcObj));
 
-            startFinished = true;
+            if(0 != sem_post(&semAllBinsStarted))
+            {
+                std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInMainProc, semAllBinsStarted posted error, errno="
+                    <<errno<<", "<<strerror(errno)<<std::endl;
+            }
         }
     }
     else if(IPC_MSG_TYPE_DATA == obj.type)
@@ -194,7 +214,7 @@ void processIpcMsgObjCbInMainProc(IpcMsgObj obj)
     }
 }
 
-void recvUdsMsgCbInMainProc(int sfd)
+static void recvUdsMsgCbInMainProc(int sfd)
 {
     while(1)
     {
@@ -206,11 +226,13 @@ void recvUdsMsgCbInMainProc(int sfd)
             std::cout<<"PID="<<getpid()<<", "<<"recvUdsMsgCbInMainProc, receive error"<<std::endl;
         }
 
+        std::cout<<"PID="<<getpid()<<", "<<"recvUdsMsgCbInMainProc, receiving, sfd="<<sfd<<std::endl;
+
         myIpcMsgBuffer.pushToBuffer(ipcObj);
     }
 }
 
-void workingCbInMainProc(int sfd)
+static void workingCbInMainProc(int sfd)
 {
     for(unsigned i = 1;i <= 3;i++)
     {
@@ -225,7 +247,7 @@ void workingCbInMainProc(int sfd)
         std::string dataStr = "Data from MainProcess: " + std::to_string(i);
         memcpy(ipcObj.data, dataStr.c_str(), sizeof(dataStr));
 
-        IpcMsg::sendUdsMsg(sfd, udsPath, (void*)(&ipcObj), sizeof(ipcObj));
+        IpcMsg::sendUdsMsg(sfd, udsDcPath, (void*)(&ipcObj), sizeof(ipcObj));
 
         sleep(2);
     }    
@@ -237,13 +259,26 @@ int main()
     std::cout<<"PID="<<getpid()<<", "<<"Main process start"<<std::endl;
 
     //step.1 delete socket file
-    unlink(udsPath);
+    unlink(udsMainPath);
 
     //step.2 create UNIX domain IPC 
-    udsIpcSfd = IpcMsg::createUdsIpc(udsPath);
+    udsIpcSfd = IpcMsg::createUdsIpc(udsMainPath);
     if(0 > udsIpcSfd)
     {
         return 1;
+    }
+
+    //init semaphore
+    if(0 != sem_init(&semAllBinsStarted, 0, 0))
+    {
+        std::cout<<"PID="<<getpid()<<", "<<"semAllBinsStarted init error, errno="
+            <<errno<<", "<<strerror(errno)<<std::endl;
+    }
+
+    if(0 != sem_init(&semProcExit, 0, 0))
+    {
+        std::cout<<"PID="<<getpid()<<", "<<"semProcExit init error, errno="
+            <<errno<<", "<<strerror(errno)<<std::endl;
     }
 
     //step.3 start IPC msg receiving thread
@@ -262,7 +297,7 @@ int main()
     startUp();
 
     //step.8 wait for all bins have finished starting
-    //waitForAllbinsStart();
+    waitForAllbinsStart();
 
     //step.19 start a working thread which will send somthing to other process
     std::thread workingThread(workingCbInMainProc, udsIpcSfd);
@@ -273,6 +308,9 @@ int main()
     //join all threads
     udsIpcRecvThread.join();
     workingThread.join();
+
+    //close socket fd
+    close(udsIpcSfd);
     
     return 0;
 }
