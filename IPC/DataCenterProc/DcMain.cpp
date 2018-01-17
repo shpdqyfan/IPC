@@ -88,7 +88,7 @@ void processIpcMsgObjCbInDcProc(IpcMsgObj obj)
         return;
     }
 
-    std::cout<<"PID="<<getpid()<<", "<<"recvUdsMsgCbInDcProc, received:"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"processIpcMsgObjCbInDcProc, received:"<<std::endl;
     std::cout<<"PID="<<getpid()<<", "<<"                      send id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.sendId)<<std::endl;
     std::cout<<"PID="<<getpid()<<", "<<"                      recv id: "<<IpcMsg::ipcMsgGlobalIdToStr(obj.recvId)<<std::endl;
     std::cout<<"PID="<<getpid()<<", "<<"                      msgtype: "<<IpcMsg::ipcMsgTypeToStr(obj.type)<<std::endl;
@@ -237,6 +237,7 @@ int main()
     waitForProcExit();
 
     //join all threads
+    myIpcMsgBuffer.stopBuffering();
     udsIpcRecvThread.join();
     workingThread.join();
 

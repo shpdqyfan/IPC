@@ -103,6 +103,12 @@ static int spawnProc(Process& proc)
 
         int rlt = system(proc.execCmd.c_str());
         std::cout<<"PID="<<getpid()<<", "<<"spawnProc, system() rlt="<<rlt<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
+
+        //join
+        myIpcMsgBuffer.stopBuffering();
+
+        //child process should exit when the system() comes out of the status of block
+        exit(0);
     }
     else if(0 < pid)
     {
@@ -393,6 +399,7 @@ int main()
     waitForProcExit();
 
     //join all threads
+    myIpcMsgBuffer.stopBuffering();
     udsIpcRecvThread.join();
     workingThread.join();
 
