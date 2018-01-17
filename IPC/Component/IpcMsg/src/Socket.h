@@ -22,6 +22,7 @@ namespace Socket {
     int acceptFromPeer(int sfd, struct sockaddr* saddr);
     int connectToPeer(int sfd, const struct sockaddr* saddr);
     void closeFd(int sfd);
+    void shutdownSock(int sfd, int flag);
     ssize_t recvMessage(int sfd, void* buf, int size);
     //used in unix domain socket
     ssize_t sendMessage(int sfd, const char* sockFile, void* buf, int size);

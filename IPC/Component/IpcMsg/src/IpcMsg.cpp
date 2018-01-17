@@ -71,6 +71,12 @@ int IpcMsg::recvUdsMsg(int sfd, void* buf, int size)
     return 0;
 }
 
+void IpcMsg::closeSock(int sfd, int flag)
+{
+    Socket::shutdownSock(sfd, flag);
+    Socket::closeFd(sfd);
+}
+
 std::string IpcMsg::ipcMsgGlobalIdToStr(IpcMsgGlobalId id)
 {
     switch(id)

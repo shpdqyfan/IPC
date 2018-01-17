@@ -91,9 +91,16 @@ int Socket::connectToPeer(int sfd, const struct sockaddr* saddr)
 
 void Socket::closeFd(int sfd)
 {
-    std::cout<<"closeFd, sfd="<<sfd<<std::endl;
-    
     close(sfd);
+    
+    std::cout<<"closeFd, sfd="<<sfd<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
+}
+
+void Socket::shutdownSock(int sfd, int flag)
+{
+    shutdown(sfd, flag);
+    
+    std::cout<<"shutdownSock, sfd="<<sfd<<", flag="<<flag<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
 }
 
 ssize_t Socket::recvMessage(int sfd, void* buf, int size)
