@@ -107,7 +107,7 @@ static int spawnProc(Process& proc)
         //join
         myIpcMsgBuffer.stopBuffering();
 
-        //child process should exit when the system() comes out of the status of block
+        //child process should exit when the system() comes out from the status of block
         exit(0);
     }
     else if(0 < pid)
