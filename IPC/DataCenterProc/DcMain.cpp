@@ -180,7 +180,7 @@ static void workingCbInDcProc(int sfd)
 
 int main()
 {
-    std::cout<<"PID="<<getpid()<<", "<<"Dc process start, triggered by main process"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"Dc process start, triggered by main process, parent pid="<<getppid()<<std::endl;
 
     signal(SIGINT, handleTermSig);
 
@@ -241,7 +241,7 @@ int main()
     udsIpcRecvThread.join();
     workingThread.join();
 
-    std::cout<<"PID="<<getpid()<<", "<<"Dc process stopped"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"Dc process stopped, parent pid="<<getppid()<<std::endl;
     
     return 0;
 }

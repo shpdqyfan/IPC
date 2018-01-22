@@ -99,7 +99,7 @@ static int spawnProc(Process& proc)
     pid_t pid = fork();
     if(0 == pid)
     {
-        std::cout<<"PID="<<getpid()<<", "<<"spawnProc, in child process"<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"spawnProc, in child process, parent pid="<<getppid()<<std::endl;
 
         int rlt = system(proc.execCmd.c_str());
         std::cout<<"PID="<<getpid()<<", "<<"spawnProc, system() rlt="<<rlt<<", errno="<<errno<<", "<<strerror(errno)<<std::endl;
@@ -107,12 +107,14 @@ static int spawnProc(Process& proc)
         //join
         myIpcMsgBuffer.stopBuffering();
 
+        std::cout<<"PID="<<getpid()<<", "<<"spawnProc, child process exit, parent pid="<<getppid()<<std::endl;
+
         //child process should exit when the system() comes out from the status of block
         exit(0);
     }
     else if(0 < pid)
     {
-        std::cout<<"PID="<<getpid()<<", "<<"spawnProc, in parent process"<<std::endl;
+        std::cout<<"PID="<<getpid()<<", "<<"spawnProc, in parent process, parent pid="<<getppid()<<std::endl;
     }
     else
     {
@@ -403,7 +405,7 @@ int main()
     udsIpcRecvThread.join();
     workingThread.join();
 
-    std::cout<<"PID="<<getpid()<<", "<<"Main process stopped"<<std::endl;
+    std::cout<<"PID="<<getpid()<<", "<<"Main process stopped, parent pid="<<getppid()<<std::endl;
     
     return 0;
 }
